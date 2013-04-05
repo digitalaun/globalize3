@@ -33,6 +33,21 @@ module Globalize
           end
         end
 
+        return fallback_unavailable(locale, name)
+      end
+
+      def fallback_unavailable(locale, name)
+        return nil unless record.translation_options[:promiscuous_fallbacks]
+
+        record.translations.each do |translation|
+          value = translation.send(name)
+
+          if value
+            set_metadata(value, :locale => translation.locale, :requested_locale => locale)
+            return value
+          end
+        end
+
         return nil
       end
 
@@ -45,7 +60,7 @@ module Globalize
         record.translations.each do |t|
           existing_translations_by_locale[t.locale.to_s] = t
         end
-        
+
         stash.each do |locale, attrs|
           if attrs.any?
             locale_str = locale.to_s

@@ -205,6 +205,21 @@ class TranslatedTest < Test::Unit::TestCase
     translations = {:en => 'John', :de => nil}.stringify_keys!
     assert_equal translations, user.name_translations
   end
+
+  test "fallbacks with promiscuous_fallbacks" do
+    I18n.fallbacks.clear
+    I18n.fallbacks.map :en => [ :de ]
+    I18n.locale = :ja
+
+    Task.translation_options[:promiscuous_fallbacks] = true
+
+    ja_task = Task.create(:name => 'ja_text')
+    assert_equal 'ja_text', ja_task.name
+
+    I18n.locale = :en
+    assert_equal 'ja_text', ja_task.name
+  end
+
 end
 # TODO should validate_presence_of take fallbacks into account? maybe we need
 #   an extra validation call, or more options for validate_presence_of.
